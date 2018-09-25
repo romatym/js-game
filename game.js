@@ -80,7 +80,8 @@ class Actor {
         Object.defineProperty(this, 'type', {
             //writable: false,
             get: function () {
-                return this;
+                if(arguments[3] === undefined) return this;
+                else return arguments[3];
             }
         });
     }
@@ -178,7 +179,7 @@ class Level {
         }
         return undefined;
     }
-        obstacleAt(vectorAt, vectorSize) {
+    obstacleAt(vectorAt, vectorSize) {
         if(!vectorAt instanceof Vector) {
             throw 'Неправильный тип объекта vectorAt';
         }
@@ -278,7 +279,7 @@ class Level {
 // }
 
 
-class LevelParser extends Level {
+class LevelParser {
     constructor(symbolsVocabulary) {
         //super();
     }
@@ -326,27 +327,79 @@ class LevelParser extends Level {
     parse(strArray) {
         let grid = this.createGrid(strArray);
         let actors = this.createActors(strArray);
-        return new level(grid, actors);
+        return new Level(grid, actors);
         //this.super.constructor; //
 
         //return level1;
     }
 }
 
-const plan = [
-    ' @ ',
-    'x!x'
-];
+// const plan = [
+//     ' @ ',
+//     'x!x'
+// ];
+//
+// const actorsDict = Object.create(null);
+// actorsDict['@'] = Actor;
+//
+// const parser = new LevelParser(actorsDict);
+// //let a = parser.createActors(plan);
+// const level = parser.parse(plan);
+//
+// level.grid.forEach((line, y) => {
+//     line.forEach((cell, x) => console.log(`(${x}:${y}) ${cell}`));
+// });
+//
+// level.actors.forEach(actor => console.log(`(${actor.pos.x}:${actor.pos.y}) ${actor.type}`));
 
-const actorsDict = Object.create(null);
-actorsDict['@'] = Actor;
+class Fireball extends Actor {
+    constructor(pos, speed) {
+        super(pos, new Vector(1,1), speed, 'fireball');
+    }
+    getNextPosition(time = 1) {
+        return this.pos.plus(new Vector(time, time));
+    }
+    handleObstacle() {
+        this.speed = this.speed.times(-1);
+    }
+    act(time, gameField) {
+        this.getNextPosition(time);
 
-const parser = new LevelParser(actorsDict);
-//let a = parser.createActors(plan);
-const level = parser.parse(plan);
+        if(gameField.obstacleAt(this.speed, this.size) === undefined) {
+            this.handleObstacle();
+        }
+    }
+}
 
-level.grid.forEach((line, y) => {
-    line.forEach((cell, x) => console.log(`(${x}:${y}) ${cell}`));
-});
+const time = 5;
+const speed = new Vector(1, 0);
+const position = new Vector(5, 5);
 
-level.actors.forEach(actor => console.log(`(${actor.pos.x}:${actor.pos.y}) ${actor.type}`));
+const ball = new Fireball(position, speed);
+
+const nextPosition = ball.getNextPosition(time);
+console.log(`Новая позиция: ${nextPosition.x}: ${nextPosition.y}`);
+
+ball.handleObstacle();
+console.log(`Текущая скорость: ${ball.speed.x}: ${ball.speed.y}`);
+
+
+class HorizontalFireball extends Fireball {
+    constructor(pos) {
+        super(pos, new Vector(1,1), new Vector(2,0));
+    }
+}
+class VerticalFireball extends Fireball {
+    constructor(pos) {
+        super(pos, new Vector(1,1), new Vector(0,2));
+    }
+}
+class FireRain extends Fireball {
+    constructor(pos) {
+        super(pos, new Vector(1,1), new Vector(0,3));
+    }
+    handleObstacle() {
+        //???this = new FireRain(pos);
+    }
+}
+
