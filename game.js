@@ -402,4 +402,34 @@ class FireRain extends Fireball {
         //???this = new FireRain(pos);
     }
 }
-
+class coin extends Actor {
+    constructor(pos) {
+        super(pos, new Vector(0.6, 0.6), new Vector(), 'coin');
+        this.pos.plus(new Vector(0.2, 0.1));
+        this.springSpeed = 8;
+        this.springDist = 0.07;
+        this.spring = Math.random()* 2 * (Math.PI);
+    }
+    updateSpring(time = 1) {
+        this.spring = this.spring + this.springSpeed * time;
+    }
+    getSpringVector() {
+        return new Vector(0, Math.sin(this.spring) * this.springDist);
+    }
+    getNextPosition(time = 1) {
+        //return this.pos.plus(getSpringVector);
+        return new coin().pos.plus(getSpringVector);
+    }
+    act(time) {
+        this = this.getNextPosition(time);
+    }  
+}
+class Player extends Actor {
+    constructor(pos) {
+        super(pos.plus(0, -0.5), new Vector(0.8, 1.5), new Vector(), 'player');
+        this.pos.plus(new Vector(0.2, 0.1));
+        this.springSpeed = 8;
+        this.springDist = 0.07;
+        this.spring = Math.random()* 2 * (Math.PI);
+    }
+}
