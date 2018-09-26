@@ -8,7 +8,7 @@ class Vector {
 
     plus(newVector) {
         if(!newVector instanceof Vector) {
-            throw 'Неправильный тип объекта newVector';
+            throw new Error('Неправильный тип объекта newVector');
         }
         return new Vector(newVector.x + this.x, newVector.y + this.y);
     }
@@ -26,72 +26,45 @@ console.log(`Исходное расположение: ${start.x}:${start.y}`);
 console.log(`Текущее расположение: ${finish.x}:${finish.y}`);
 
 class Actor {
-    constructor(pos, size, speed) {
-        if(!pos instanceof Vector) {
-            throw 'Неправильный тип объекта pos';
+    constructor(pos = new Vector(0,0), size = new Vector(1,1), speed = new Vector(0, 0)) {
+        if (!pos instanceof Vector) {
+            throw new Error('Неправильный тип объекта pos');
         }
-        if(!size instanceof Vector) {
-            throw 'Неправильный тип объекта size';
+        if (!size instanceof Vector) {
+            throw new Error('Неправильный тип объекта size');
         }
-        if(!speed instanceof Vector) {
-            throw 'Неправильный тип объекта speed';
+        if (!speed instanceof Vector) {
+            throw new Error('Неправильный тип объекта speed');
         }
-
-        if(pos === undefined) {
-            this.pos = new Vector(0,0);
-        } else {
-            this.pos = pos;
-        }
-        if(size === undefined) {
-            this.size = new Vector(1,1);
-        } else {
-            this.size = size;
-        }
-        if(speed === undefined) {
-            this.speed = new Vector(0,0);
-        } else {
-            this.speed = speed;
-        }
-
-        Object.defineProperty(this, 'left', {
-            //writable: false,
-            get: function () {
-                return this.pos.x;
-            }
-        });
-        Object.defineProperty(this, 'right', {
-            //writable: false,
-            get: function () {
-                return this.pos.x + this.size.x
-            }
-        });
-        Object.defineProperty(this, 'top', {
-            //writable: false,
-            get: function () {
-                return this.pos.y  + this.size.y
-            }
-        });
-        Object.defineProperty(this, 'bottom', {
-            //writable: false,
-            get: function () {
-                return this.pos.y
-            }
-        });
-        Object.defineProperty(this, 'type', {
-            //writable: false,
-            get: function () {
-                if(arguments[3] === undefined) return this;
-                else return arguments[3];
-            }
-        });
+        this.pos = pos;
+        this.pos = size;
+        this.pos = speed;
     }
+        get left() {
+            return this.pos.x;
+        }
+        get right() {
+            return this.pos.x + this.size.x;
+        }
+        get top() {
+            return this.pos.y  + this.size.y;
+        }
+        get bottom() {
+            return this.pos.y;
+        }
+        get type() {
+            if(arguments[3] === undefined)
+                return this;
+            else return arguments[3];
+        }
+
 
     isIntersect(otherActor) {
             if(!otherActor instanceof Actor) {
-                throw 'Неправильный тип объекта otherActor';
+                throw new Error('Неправильный тип объекта otherActor');
             }
             if(otherActor === undefined) {
-                throw 'Не задан тип объекта otherActor';
+                throw new Error('Не задан тип объекта otherActor');
             }
             if(otherActor === this) {
                 return false;
@@ -167,10 +140,10 @@ class Level {
     }
     actorAt(actorCheck) {
         if(!actorCheck instanceof Actor) {
-            throw 'Неправильный тип объекта Actor';
+            throw new Error('Неправильный тип объекта Actor');
         }
         if(actorCheck === undefined) {
-            throw 'Не задан тип объекта Actor';
+            throw new Error('Не задан тип объекта Actor');
         }
         for (let item of this.actors) {
             if (actorCheck.isIntersect(item)) {
@@ -181,10 +154,10 @@ class Level {
     }
     obstacleAt(vectorAt, vectorSize) {
         if(!vectorAt instanceof Vector) {
-            throw 'Неправильный тип объекта vectorAt';
+            throw new Error('Неправильный тип объекта vectorAt');
         }
         if(!vectorSize instanceof Vector) {
-            throw 'Неправильный тип объекта vectorSize';
+            throw new Error('Неправильный тип объекта vectorSize');
         }
 
         for(let counterX = vectorAt.x-1; ++counterX; counterX < vectorSize.x) {
@@ -289,7 +262,6 @@ class LevelParser {
         else if(strActor === '=') return Actor.prototype.constructor;
         else if(strActor === '|') return Actor.prototype.constructor;
         else if(strActor === 'v') return Actor.prototype.constructor;
-        else return undefined;
     }
     obstacleFromSymbol(strObstacle) {
         if(strObstacle === 'x') return 'wall';
@@ -357,7 +329,7 @@ class Fireball extends Actor {
         super(pos, new Vector(1,1), speed, 'fireball');
     }
     getNextPosition(time = 1) {
-        return this.pos.plus(new Vector(time, time));
+        return new Vector(this.x, this.y).plus(new Vector(this.speed * time, this.speed * time));
     }
     handleObstacle() {
         this.speed = this.speed.times(-1);
@@ -402,30 +374,30 @@ class FireRain extends Fireball {
         //???this = new FireRain(pos);
     }
 }
-class coin extends Actor {
-    constructor(pos) {
-        super(pos, new Vector(0.6, 0.6), new Vector(), 'coin');
-        this.pos.plus(new Vector(0.2, 0.1));
-        this.springSpeed = 8;
-        this.springDist = 0.07;
-        this.spring = Math.random()* 2 * (Math.PI);
-    }
-    updateSpring(time = 1) {
-        this.spring = this.spring + this.springSpeed * time;
-    }
-    getSpringVector() {
-        return new Vector(0, Math.sin(this.spring) * this.springDist);
-    }
-    getNextPosition(time = 1) {
-        //return this.pos.plus(getSpringVector);
-        return new coin().pos.plus(getSpringVector);
-    }
-    act(time) {
-        //this = this.getNextPosition(time);
-    }  
-}
-class Player extends Actor {
-    constructor(pos) {
-        super(pos.plus(0, -0.5), new Vector(0.8, 1.5), new Vector(), 'player');
-    }
-}
+// class coin extends Actor {
+//     constructor(pos) {
+//         super(pos, new Vector(0.6, 0.6), new Vector(), 'coin');
+//         this.pos.plus(new Vector(0.2, 0.1));
+//         this.springSpeed = 8;
+//         this.springDist = 0.07;
+//         this.spring = Math.random()* 2 * (Math.PI);
+//     }
+//     updateSpring(time = 1) {
+//         this.spring = this.spring + this.springSpeed * time;
+//     }
+//     getSpringVector() {
+//         return new Vector(0, Math.sin(this.spring) * this.springDist);
+//     }
+//     getNextPosition(time = 1) {
+//         //return this.pos.plus(getSpringVector);
+//         return new coin().pos.plus(getSpringVector);
+//     }
+//     act(time) {
+//         //this = this.getNextPosition(time);
+//     }
+// }
+// class Player extends Actor {
+//     constructor(pos) {
+//         super(pos.plus(0, -0.5), new Vector(0.8, 1.5), new Vector(), 'player');
+//     }
+// }
