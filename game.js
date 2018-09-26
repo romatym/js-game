@@ -421,7 +421,7 @@ class coin extends Actor {
         return new coin().pos.plus(getSpringVector);
     }
     act(time) {
-        this = this.getNextPosition(time);
+        //this = this.getNextPosition(time);
     }  
 }
 class Player extends Actor {
