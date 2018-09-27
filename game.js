@@ -117,7 +117,6 @@ class Level {
         return item;
       }
     }
-    return undefined;
   }
   obstacleAt(vectorAt, vectorSize) {
     if (!vectorAt instanceof Vector) {
@@ -140,7 +139,6 @@ class Level {
         }
       }
     }
-    return undefined;
   }
   removeActor(Actor) {
     this.grid.forEach(function (row) {
@@ -306,6 +304,7 @@ class coin extends Actor {
     return new Vector(0, Math.sin(this.spring) * this.springDist);
   }
   getNextPosition(time = 1) {
+    //return this.pos.plus(getSpringVector);
     return this.basePosition.plus(getSpringVector);
   }
   act(time) {
