@@ -17,13 +17,6 @@ class Vector {
   }
 }
 
-const start = new Vector(30, 50);
-const moveTo = new Vector(5, 10);
-const finish = start.plus(moveTo.times(2));
-
-console.log(`Исходное расположение: ${start.x}:${start.y}`);
-console.log(`Текущее расположение: ${finish.x}:${finish.y}`);
-
 class Actor {
   constructor(pos = new Vector(0, 0), size = new Vector(1, 1), speed = new Vector(0, 0)) {
     if (!pos instanceof Vector) {
@@ -39,6 +32,9 @@ class Actor {
     this.size = size;
     this.speed = speed;
   }
+  act () {
+      
+  }
   get left() {
     return this.pos.x;
   }
@@ -46,14 +42,14 @@ class Actor {
     return this.pos.x + this.size.x;
   }
   get top() {
-    return this.pos.y + this.size.y;
+    return this.pos.y;// + this.size.y;
   }
   get bottom() {
-    return this.pos.y;
+    return this.pos.y + this.size.y;
   }
   get type() {
     if (arguments[3] === undefined)
-      return this;
+      return 'actor';
     else
       return arguments[3];
   }
@@ -118,27 +114,41 @@ class Level {
       }
     }
   }
-  obstacleAt(vectorAt, vectorSize) {
-    if (!vectorAt instanceof Vector) {
+  obstacleAt(vectorPos, vectorSize) {
+    if (!vectorPos instanceof Vector) {
       throw new Error('Неправильный тип объекта vectorAt');
     }
     if (!vectorSize instanceof Vector) {
       throw new Error('Неправильный тип объекта vectorSize');
     }
-
-    for (let counterX = vectorAt.x - 1; ++counterX; counterX < vectorSize.x) {
-      for (let counterY = vectorAt.y - 1; ++counterY; counterY < vectorSize.y) {
-        if (counterY < 0) {
-          return 'lava';
-        } else if (counterY > this.grid.length) {
-          return 'wall';
-        } else if (counterX > this.grid[counterY].length) {
-          return 'wall';
-        } else if (this.grid[counterY][counterX] !== undefined) {
-          return this.grid[counterY][counterX];
+    
+        let newPositionVector = vectorPos.plus(vectorSize);
+        if (newPositionVector.y < 0) {
+            return 'lava';
+        } else if (newPositionVector.y-1 > this.grid.length) {
+            return 'wall';
+        } else if (newPositionVector.y > this.grid[newPositionVector.y-1].length) {
+            return 'wall';
+        } else if (this.grid[newPositionVector.y-1][newPositionVector.x-1] !== undefined) {
+            return this.grid[newPositionVector.y-1][newPositionVector.x-1];
+            //return undefined;
         }
-      }
-    }
+//        for (let counterX = vectorPos.x - 1; counterX++; counterX < vectorSize.x) {
+//            console.log(counterX);
+//            for (let counterY = vectorPos.y - 1; counterY++; counterY < vectorSize.y) {
+//                console.log(counterY);
+//                if (counterY < 0) {
+//                    return 'lava';
+//                } else if (counterY > this.grid.length) {
+//                    return 'wall';
+//                } else if (counterX > this.grid[counterY].length) {
+//                    return 'wall';
+//                } else if (this.grid[counterY][counterX] !== undefined) {
+//                    return this.grid[counterY][counterX];
+//                    //return undefined;
+//                }
+//            }
+//        }
   }
   removeActor(Actor) {
     this.grid.forEach(function (row) {
@@ -260,19 +270,6 @@ class Fireball extends Actor {
   }
 }
 
-const time = 5;
-const speed = new Vector(1, 0);
-const position = new Vector(5, 5);
-
-const ball = new Fireball(position, speed);
-
-const nextPosition = ball.getNextPosition(time);
-console.log(`Новая позиция: ${nextPosition.x}: ${nextPosition.y}`);
-
-ball.handleObstacle();
-console.log(`Текущая скорость: ${ball.speed.x}: ${ball.speed.y}`);
-
-
 class HorizontalFireball extends Fireball {
   constructor(pos) {
     super(pos, new Vector(1, 1), new Vector(2, 0));
@@ -288,7 +285,7 @@ class FireRain extends Fireball {
     super(pos, new Vector(1, 1), new Vector(0, 3));
   }
 }
-class coin extends Actor {
+class Сoin extends Actor {
   constructor(pos) {
     super(pos, new Vector(0.6, 0.6), new Vector(), 'coin');
     this.pos.plus(new Vector(0.2, 0.1));
@@ -316,3 +313,5 @@ class Player extends Actor {
     super(pos.plus(0, -0.5), new Vector(0.8, 1.5), new Vector(), 'player');
   }
 }
+
+console.log("Проверка связи");
