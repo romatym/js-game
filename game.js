@@ -4,14 +4,12 @@ class Vector {
     this.x = x;
     this.y = y;
   }
-
   plus(newVector) {
-    if (!newVector instanceof Vector) {
+    if (!(newVector instanceof Vector)) {
       throw new Error('Неправильный тип объекта newVector');
     }
     return new Vector(newVector.x + this.x, newVector.y + this.y);
   }
-
   times(multiplier) {
     return new Vector(this.x * multiplier, this.y * multiplier);
   }
@@ -19,13 +17,13 @@ class Vector {
 
 class Actor {
   constructor(pos = new Vector(0, 0), size = new Vector(1, 1), speed = new Vector(0, 0)) {
-    if (!pos instanceof Vector) {
+    if (!(pos instanceof Vector)) {
       throw new Error('Неправильный тип объекта pos');
     }
-    if (!size instanceof Vector) {
+    if (!(size instanceof Vector)) {
       throw new Error('Неправильный тип объекта size');
     }
-    if (!speed instanceof Vector) {
+    if (!(speed instanceof Vector)) {
       throw new Error('Неправильный тип объекта speed');
     }
     this.pos = pos;
@@ -54,38 +52,77 @@ class Actor {
       return arguments[3];
   }
 
-  isIntersect(otherActor) {
-    if (!otherActor instanceof Actor) {
-      throw new Error('Неправильный тип объекта otherActor');
+    isIntersect(otherActor) {
+        if (!(otherActor instanceof Actor)) {
+            throw new Error('Неправильный тип объекта otherActor');
+        }
+        if (otherActor === undefined) {
+            throw new Error('Не задан тип объекта otherActor');
+        }
+        if (otherActor === this) {
+            return false;
+        }
+
+        //переведем в координаты
+        let this1 = this.pos.plus(this.size);
+        let otherActor1 = otherActor.pos.plus(otherActor.size);
+
+        let a = this.pos;
+        a.x1 = this1.x;
+        a.y1 = this1.y;
+
+        let b = otherActor.pos;
+        b.x1 = otherActor1.x;
+        b.y1 = otherActor1.y;
+
+        //проверим по пересечению диагоналей прямоугольников
+        let res1 = IntersectionDiagonal(a.x, a.y, a.x1, a.y1, b.x, b.y, b.x1, b.y1);
+        let res2 = IntersectionDiagonal(a.x, a.y1, a.x1, a.y, b.x, b.y, b.x1, b.y1);
+
+        if (res1 || res2) {
+            //есть пересечение по диагоналям
+            return true;
+        }
+
+        // а теперь проверим на один прямоугольник внутри другого
+        if (
+            (this.left < otherActor.right && otherActor.right < this.right
+                || this.left < otherActor.left && otherActor.left < this.right)
+            &&
+            (this.top < otherActor.top && otherActor.top < this.bottom
+                || this.top < otherActor.bottom && otherActor.bottom < this.bottom)
+        ) {
+            return true;
+        } else
+            return false;
     }
-    if (otherActor === undefined) {
-      throw new Error('Не задан тип объекта otherActor');
-    }
-    if (otherActor === this) {
-      return false;
-    }
-    if (
-      (this.left <= otherActor.right && otherActor.right <= this.right
-        || this.left <= otherActor.left && otherActor.left <= this.right)
-      &&
-      (this.bottom <= otherActor.top && otherActor.top <= this.top
-        || this.bottom <= otherActor.bottom && otherActor.bottom <= this.top)
-    ) {
-      return true;
-    } else
-      return false;
-  }
+}
+
+function IntersectionDiagonal(ax1, ay1, ax2, ay2, bx1, by1, bx2, by2) {
+    let v1, v2, v3, v4;
+    v1 = (bx2 - bx1) * (ay1 - by1) - (by2 - by1) * (ax1 - bx1);
+    v2 = (bx2 - bx1) * (ay2 - by1) - (by2 - by1) * (ax2 - bx1);
+    v3 = (ax2 - ax1) * (by1 - ay1) - (ay2 - ay1) * (bx1 - ax1);
+    v4 = (ax2 - ax1) * (by2 - ay1) - (ay2 - ay1) * (bx2 - ax1);
+    return (v1 * v2 < 0) && (v3 * v4 < 0);
 }
 
 class Level {
   constructor(grid, actors) {
     this.grid = grid;
     this.actors = actors;
-    if (!actors === undefined) {
+    if (actors === undefined) {
+        //this.player = new Player();
+    }
+    else {
       let player = actors.filter(actor => actor.type === actor);
       this.player = player[0];
     }
-    if (!grid === undefined) {
+    if (grid === undefined) {
+        this.height = 0;
+        this.width = 0;
+    }
+    else {
       this.height = grid.length;
       this.width = grid.reduce(function (max, current) {
         return Math.max(max, current.length);
@@ -102,7 +139,7 @@ class Level {
     return false;
   }
   actorAt(actorCheck) {
-    if (!actorCheck instanceof Actor) {
+    if (!(actorCheck instanceof Actor)) {
       throw new Error('Неправильный тип объекта Actor');
     }
     if (actorCheck === undefined) {
@@ -115,10 +152,10 @@ class Level {
     }
   }
   obstacleAt(vectorPos, vectorSize) {
-    if (!vectorPos instanceof Vector) {
+    if (!(vectorPos instanceof Vector)) {
       throw new Error('Неправильный тип объекта vectorAt');
     }
-    if (!vectorSize instanceof Vector) {
+    if (!(vectorSize instanceof Vector)) {
       throw new Error('Неправильный тип объекта vectorSize');
     }
     
@@ -310,8 +347,11 @@ class Сoin extends Actor {
 }
 class Player extends Actor {
   constructor(pos) {
-    super(pos.plus(0, -0.5), new Vector(0.8, 1.5), new Vector(), 'player');
+    super(pos.plus(new Vector(0, -0.5)), new Vector(0.8, 1.5), new Vector(), 'player');
   }
 }
 
 console.log("Проверка связи");
+let player = new Player(new Vector());
+const actors = [ player ];
+const level = new Level(undefined, [player]);
