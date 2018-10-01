@@ -29,9 +29,9 @@ class Actor {
     this.pos = pos;
     this.size = size;
     this.speed = speed;
-    if (arguments[3] !== undefined) {
-       //this.type = arguments[3];
-    }
+//    if (arguments[3] !== undefined) {
+//       //this.type = arguments[3];
+//    }
   }
   act () {
       
@@ -56,9 +56,6 @@ class Actor {
        return arguments[3];
     }
   }
-//  set type(value) {
-//      return value;
-//  }
 
     isIntersect(otherActor) {
         if (!(otherActor instanceof Actor)) {
@@ -140,98 +137,90 @@ class Level {
     this.finishDelay = 1;
   }
 
-  isFinished() {
-    if (this.status !== null && this.finishDelay < 0) {
-      return true;
+    isFinished() {
+        if (this.status !== null && this.finishDelay < 0) {
+            return true;
+        }
+        return false;
     }
-    return false;
-  }
-  actorAt(actorCheck) {
-    if (!(actorCheck instanceof Actor)) {
-      throw new Error('Неправильный тип объекта Actor');
+    actorAt(actorCheck) {
+        if (!(actorCheck instanceof Actor)) {
+            throw new Error('Неправильный тип объекта Actor');
+        }
+        if (actorCheck === undefined) {
+            throw new Error('Не задан тип объекта Actor');
+        }
+        if (this.actors === undefined) {
+            return undefined;
+        }
+
+        for (let item of this.actors) {
+            if (actorCheck.isIntersect(item)) {
+                return item;
+            }
+        }
     }
-    if (actorCheck === undefined) {
-      throw new Error('Не задан тип объекта Actor');
-    }
-    if (this.actors === undefined) {
-      return undefined;
-    }
-    
-    for (let item of this.actors) {
-      if (actorCheck.isIntersect(item)) {
-        return item;
-      }
-    }
-  }
-  obstacleAt(vectorPos, vectorSize) {
-    if (!(vectorPos instanceof Vector)) {
-      throw new Error('Неправильный тип объекта vectorAt');
-    }
-    if (!(vectorSize instanceof Vector)) {
-      throw new Error('Неправильный тип объекта vectorSize');
-    }
-    
-        if(vectorPos.x < 0 || vectorPos.x > this.grid[0].length) {
+    obstacleAt(vectorPos, vectorSize) {
+        if (!(vectorPos instanceof Vector)) {
+            throw new Error('Неправильный тип объекта vectorAt');
+        }
+        if (!(vectorSize instanceof Vector)) {
+            throw new Error('Неправильный тип объекта vectorSize');
+        }
+
+        if (vectorPos.x < 0) {
+            //|| vectorPos.x > this.grid[0].length) {
             return 'wall';
-        } else if (vectorPos.y-1 > this.grid.length) {
-            return 'wall';          
+        } else if (vectorPos.y > this.grid.length) {
+            return 'wall';
         } else if (vectorPos.y < 0) {
-            return 'lava';          
+            return 'wall';
         }
         let newPositionVector = vectorPos.plus(vectorSize);
         if (newPositionVector.y < 0) {
             return 'lava';
-        } else if (newPositionVector.y-1 > this.grid.length) {
+        } else if (newPositionVector.y > this.grid.length) {
+            return 'lava';
+        } else if (!Number.isInteger(newPositionVector.y) || !Number.isInteger(newPositionVector.x)
+                &&
+                this.grid[Math.ceil(newPositionVector.y)][Math.ceil(newPositionVector.x)] === 'wall'
+                || this.grid[Math.floor(newPositionVector.y)][Math.floor(newPositionVector.x)] === 'wall'
+                ) {
             return 'wall';
-        } else if (newPositionVector.y > this.grid[newPositionVector.y-1].length) {
+        } else if (this.grid[newPositionVector.y] === undefined) {
+            return 'lava';
+        } else if (newPositionVector.y > this.grid[newPositionVector.y].length) {
             return 'wall';
         } else if (newPositionVector.x > this.grid[0].length) {
             return 'wall';
-        } else if (this.grid[newPositionVector.y-1][newPositionVector.x-1] !== undefined) {
-            return this.grid[newPositionVector.y-1][newPositionVector.x-1];
+        } else if (this.grid[newPositionVector.y][newPositionVector.x] !== undefined) {
+            return this.grid[newPositionVector.y][newPositionVector.x];
             //return undefined;
         }
-//        for (let counterX = vectorPos.x - 1; counterX++; counterX < vectorSize.x) {
-//            console.log(counterX);
-//            for (let counterY = vectorPos.y - 1; counterY++; counterY < vectorSize.y) {
-//                console.log(counterY);
-//                if (counterY < 0) {
-//                    return 'lava';
-//                } else if (counterY > this.grid.length) {
-//                    return 'wall';
-//                } else if (counterX > this.grid[counterY].length) {
-//                    return 'wall';
-//                } else if (this.grid[counterY][counterX] !== undefined) {
-//                    return this.grid[counterY][counterX];
-//                    //return undefined;
-//                }
-//            }
-//        }
-  }
-  removeActor(Actor) {
-    this.grid.forEach(function (row) {
-      row.forEach(function (cell) {
-        if (this.grid[row][cell] === Actor) {
-          this.grid[row][cell] = undefined;
-          return;
-        }
-      });
-    });
-  }
+    }
+    removeActor(deleteActor) {
+        this.actors.forEach(function (item, i, arr) {
+            if (item === deleteActor) {
+                delete arr[i];
+                return;
+            }
+        });
+    }
 
-  noMoreActors(actorType) {
-    this.grid.forEach(function (row, indexY, arrY) {
-      row.forEach(function (cell, indexX, arrX) {
-        if (cell !== undefined && cell.type === actorType) {
-          return false;
+    noMoreActors(actorType) {
+        if (this.actors === undefined) {
+            return true;
         }
-      });
-    });
-    return true;
-  }
+        this.actors.forEach(function (item, i, arr) {
+//            if (item.type === actorType) {
+//                return false;
+//            }
+        });
+        return true;
+    }
 
   playerTouched(objectType, objectActor) {
-    if (this.status === null) {
+    if (this.status !== null) {
       return;
     }
     if (objectType === 'lava' || objectType === 'fireball') {
@@ -326,11 +315,14 @@ class Fireball extends Actor {
       this.handleObstacle();
     }
   }
+  get type() {
+    return 'fireball';
+  }
 }
 
 class HorizontalFireball extends Fireball {
   constructor(pos) {
-    super(pos, new Vector(1, 1), new Vector(2, 0));
+    super(pos, new Vector(2, 0));
   }
 }
 
@@ -374,18 +366,12 @@ class Player extends Actor {
   constructor(pos) {
     super(pos.plus(new Vector(0, -0.5)), new Vector(0.8, 1.5), new Vector(), 'player');
   }
+  get player() {
+    return 'player';
+  }
 }
 
 console.log("Проверка связи");
-let player = new Player(new Vector());
-//const actors = [ player ];
-//const level = new Level(undefined, [player]);
 
-const lines = 100;
-const cells = 50;
-const grid = new Array(lines).fill(new Array(cells));
-const level = new Level(grid);
-
-const position = new Vector(-1, 0);
-const wall = level.obstacleAt(position, player.size);
-//expect(wall).to.be.equal('wall');
+const ball = new HorizontalFireball();
+//expect(ball.speed).to.eql(new Vector(2, 0));
