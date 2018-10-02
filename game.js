@@ -200,13 +200,6 @@ class Level {
             return 'wall';
         } else if (this.grid[newPositionVector.y][newPositionVector.x] !== undefined) {
             return this.grid[newPositionVector.y][newPositionVector.x];
-            //return undefined;
-//        }
-//                &&
-//                this.grid[Math.ceil(newPositionVector.y-1)][Math.ceil(newPositionVector.x-1)] === 'wall'
-//                || this.grid[Math.floor(newPositionVector.y-1)][Math.floor(newPositionVector.x-1)] === 'wall'
-//                ) {
-//            return 'wall';
         } else if (this.grid[newPositionVector.y] === undefined) {
             return 'lava';
         } else if (newPositionVector.y > this.grid[newPositionVector.y].length) {
@@ -413,25 +406,21 @@ class Player extends Actor {
 
 console.log("Проверка связи");
 
-//const grid = [
-//  Array(4),
-//  Array(4),
-//  Array(4),
-//  Array(4).fill('wall')
-//];
-//const level = new Level(grid);
-//const position = new Vector(2.1, 1.5);
-//const size = new Vector(0.8, 1.5);
-//const nothing = level.obstacleAt(position, size);
-//expect(nothing).to.be.undefined;
-const grid = [
-  Array(4).fill('wall'),
-  Array(4),
-  Array(4),
-  Array(4)
+const schema = [
+  '         ',
+  '         ',
+  '    =    ',
+  '       o ',
+  '     !xxx',
+  ' @       ',
+  'xxx!     ',
+  '         '
 ];
-const level = new Level(grid);
-const position = new Vector(2.1, 1);
-const size = new Vector(0.8, 1.5);
-const nothing = level.obstacleAt(position, size);
-//expect(nothing).to.be.undefined;
+const actorDict = {
+  '@': Player,
+  '=': HorizontalFireball
+}
+const parser = new LevelParser(actorDict);
+const level = parser.parse(schema);
+runLevel(level, DOMDisplay)
+  .then(status => console.log(`Игрок ${status}`));
