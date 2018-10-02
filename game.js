@@ -214,7 +214,7 @@ class Level {
     removeActor(deleteActor) {
         this.actors.forEach(function (item, i, arr) {
             if (item === deleteActor) {
-                delete arr[i];
+                arr.splice(i, 1);//delete arr[i];
                 return;
             }
         });
@@ -333,9 +333,6 @@ class Fireball extends Actor {
         } else {
             this.handleObstacle();
         }
-//        if (!(gameField.obstacleAt(this.pos, this.size) === undefined)) {
-//            this.handleObstacle();
-//        }
     }
     get type() {
         return 'fireball';
