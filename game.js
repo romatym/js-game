@@ -184,12 +184,29 @@ class Level {
             return 'lava';
         } else if (newPositionVector.y > this.grid.length) {
             return 'lava';
-        } else if (!Number.isInteger(newPositionVector.y) || !Number.isInteger(newPositionVector.x)
-                &&
-                this.grid[Math.ceil(newPositionVector.y)][Math.ceil(newPositionVector.x)] === 'wall'
-                || this.grid[Math.floor(newPositionVector.y)][Math.floor(newPositionVector.x)] === 'wall'
-                ) {
+        }
+        if (!Number.isInteger(newPositionVector.y) && !Number.isInteger(newPositionVector.x)) {
+            //дробное число
+            if(this.grid[Math.ceil(newPositionVector.y-1)][Math.ceil(newPositionVector.x-1)] === 'wall'
+                || this.grid[Math.floor(newPositionVector.y-1)][Math.floor(newPositionVector.x-1)] === 'wall') {
+                    return 'wall';
+                }
+                
+        } else if (this.grid[newPositionVector.y] === undefined) {
+            return 'lava';
+        } else if (newPositionVector.y > this.grid[newPositionVector.y].length) {
             return 'wall';
+        } else if (newPositionVector.x > this.grid[0].length) {
+            return 'wall';
+        } else if (this.grid[newPositionVector.y][newPositionVector.x] !== undefined) {
+            return this.grid[newPositionVector.y][newPositionVector.x];
+            //return undefined;
+//        }
+//                &&
+//                this.grid[Math.ceil(newPositionVector.y-1)][Math.ceil(newPositionVector.x-1)] === 'wall'
+//                || this.grid[Math.floor(newPositionVector.y-1)][Math.floor(newPositionVector.x-1)] === 'wall'
+//                ) {
+//            return 'wall';
         } else if (this.grid[newPositionVector.y] === undefined) {
             return 'lava';
         } else if (newPositionVector.y > this.grid[newPositionVector.y].length) {
@@ -395,3 +412,26 @@ class Player extends Actor {
 }
 
 console.log("Проверка связи");
+
+//const grid = [
+//  Array(4),
+//  Array(4),
+//  Array(4),
+//  Array(4).fill('wall')
+//];
+//const level = new Level(grid);
+//const position = new Vector(2.1, 1.5);
+//const size = new Vector(0.8, 1.5);
+//const nothing = level.obstacleAt(position, size);
+//expect(nothing).to.be.undefined;
+const grid = [
+  Array(4).fill('wall'),
+  Array(4),
+  Array(4),
+  Array(4)
+];
+const level = new Level(grid);
+const position = new Vector(2.1, 1);
+const size = new Vector(0.8, 1.5);
+const nothing = level.obstacleAt(position, size);
+//expect(nothing).to.be.undefined;
