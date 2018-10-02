@@ -124,7 +124,7 @@ class Level {
                 if (item.type === 'player') {
                     player = item;
                 }
-            })
+            });
             this.player = player;
         }
         if (grid === undefined) {
@@ -250,17 +250,6 @@ class LevelParser {
             return undefined;
         }
         return this.vocabulary[strActor];
-//        if (strActor === '@') {
-//            return Player;
-//        } else if (strActor === 'o') {
-//            return Coin;
-//        } else if (strActor === '=') {
-//            return HorizontalFireball;
-//        } else if (strActor === '|') {
-//            return VerticalFireball;
-//        } else if (strActor === 'v') {
-//            return FireRain;
-//        }
     }
     obstacleFromSymbol(strObstacle) {
         if (strObstacle === 'x')
@@ -280,15 +269,28 @@ class LevelParser {
         return grid;
     }
     createActors(strArray) {
+        if (this.vocabulary === undefined) {
+            return [];
+        }
+        if (strArray.length === 0) {
+            return [];
+        }
+        
         let actors = [];
-        for (let row of strArray) {
-            //let newRow = [];
-            for (let cell of row) {
+        //for (let row of strArray) {
+        for(let z=0; z < strArray.length; z++) {
+            let row = strArray[z];
+            //for (let cell of row) {
+            for(let i=0; i < row.length; i++) {
+                let cell = row[i];
                 let prototypeConstructor = this.actorFromSymbol(cell);
-                if (prototypeConstructor === undefined) {
+                if (prototypeConstructor === undefined 
+                        || !(typeof prototypeConstructor === "function")
+                        || !(new prototypeConstructor instanceof Actor)
+                        ) {
 
                 } else {
-                    let newObj = new prototypeConstructor(new Vector(row.indexOf(cell), strArray.indexOf(row)));
+                    let newObj = new prototypeConstructor(new Vector(i, z));
                     actors.push(newObj);
                 }
             }
@@ -304,7 +306,7 @@ class LevelParser {
 
 class Fireball extends Actor {
     constructor(pos, speed) {
-        super(pos, new Vector(1, 1), speed, 'fireball');
+        super(pos, new Vector(1, 1), speed);
     }
     getNextPosition(time = 1) {
         let speedTime = new Vector(this.speed.x, this.speed.y).times(time);
@@ -314,11 +316,16 @@ class Fireball extends Actor {
         this.speed = this.speed.times(-1);
     }
     act(time, gameField) {
-        this.getNextPosition(time);
+        let nextPosition = this.getNextPosition(time);
 
-        if (gameField.obstacleAt(this.speed, this.size) === undefined) {
+        if (gameField.obstacleAt(this.pos, this.size) === undefined) {
+            this.pos = nextPosition;
+        } else {
             this.handleObstacle();
         }
+//        if (!(gameField.obstacleAt(this.pos, this.size) === undefined)) {
+//            this.handleObstacle();
+//        }
     }
     get type() {
         return 'fireball';
@@ -333,14 +340,21 @@ class HorizontalFireball extends Fireball {
 
 class VerticalFireball extends Fireball {
     constructor(pos) {
-        super(pos, new Vector(1, 1), new Vector(0, 2));
+        super(pos, new Vector(0, 2));
+        this.size = new Vector(1, 1);
     }
 }
 
 class FireRain extends Fireball {
     constructor(pos) {
-        super(pos, new Vector(1, 1), new Vector(0, 3));
+        super(pos, new Vector(0, 3));
+        this.size = new Vector(1, 1);
+        this.basePosition = this.pos;
     }
+    handleObstacle() {
+        this.speed = this.speed.times(1);
+        this.pos = this.basePosition;
+    }    
 }
 
 class Сoin extends Actor {
@@ -388,10 +402,38 @@ class Mushroom extends Actor {
     }
 };
 
-let mushroom = new Mushroom;
-const level = new Level(undefined, [mushroom]);
+//let mushroom = new Mushroom;
+//const level = new Level(undefined, [mushroom]);
 //level.noMoreActors('mushroom');
 
-//const parser = new LevelParser({ y: Mushroom });
-//const actor = parser.actorFromSymbol('y');
-//expect(actor).to.equal(Mushroom);
+class BadActor {}
+let plan;
+      plan = [
+        'o   o',
+        '  z  ',
+        'o   o'
+      ];
+    
+let time, speed, position;
+time = 5;
+    speed = new Vector(1, 0);
+    //position = new Vector(5, 5);
+    
+const level = {
+  obstacleAt() {
+    return undefined;
+  }
+};
+//const ball = new Fireball(position, speed);
+//const nextPosition = new Vector(10, 5);
+//ball.act(time, level);
+//expect(ball.speed).to.eql(speed);
+//expect(ball.pos).to.eql(nextPosition);
+position = new Vector(5, 5);
+const ball = new FireRain(position);
+ball.pos = new Vector(100, 100);
+ball.handleObstacle();
+let res = ball.pos;
+
+//expect(ball.pos).to.eql(position);
+//expect(ball.speed).to.eql(new Vector(0, 3));
