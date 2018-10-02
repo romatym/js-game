@@ -328,7 +328,7 @@ class Fireball extends Actor {
     act(time, gameField) {
         let nextPosition = this.getNextPosition(time);
 
-        if (gameField.obstacleAt(this.pos, this.size) === undefined) {
+        if (gameField.obstacleAt(nextPosition, this.size) === undefined) {
             this.pos = nextPosition;
         } else {
             this.handleObstacle();
