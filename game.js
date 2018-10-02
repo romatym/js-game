@@ -357,10 +357,10 @@ class FireRain extends Fireball {
     }    
 }
 
-class Сoin extends Actor {
+class Coin extends Actor {
     constructor(pos) {
-        super(pos, new Vector(0.6, 0.6), new Vector(), 'coin');
-        this.pos.plus(new Vector(0.2, 0.1));
+        super(pos, new Vector(0.6, 0.6), new Vector());
+        this.pos = this.pos.plus(new Vector(0.2, 0.1));
         this.springSpeed = 8;
         this.springDist = 0.07;
         this.spring = Math.random() * 2 * (Math.PI);
@@ -374,66 +374,24 @@ class Сoin extends Actor {
     }
     getNextPosition(time = 1) {
         //return this.pos.plus(getSpringVector);
-        return this.basePosition.plus(getSpringVector);
+        this.updateSpring(time);
+        return this.basePosition.plus(this.getSpringVector());
     }
     act(time) {
         this.pos = this.getNextPosition(time);
     }
+    get type() {
+        return 'coin';
+    }
 }
 
 class Player extends Actor {
-    constructor(pos) {
+    constructor(pos = new Vector(0, 0)) {
         super(pos.plus(new Vector(0, -0.5)), new Vector(0.8, 1.5), new Vector(), 'player');
     }
-    get player() {
+    get type() {
         return 'player';
     }
 }
 
 console.log("Проверка связи");
-
-//const ball = new HorizontalFireball();
-//expect(ball.speed).to.eql(new Vector(2, 0));
-
-class Mushroom extends Actor {
-    //super();
-    get type() {
-        return 'mushroom';
-    }
-};
-
-//let mushroom = new Mushroom;
-//const level = new Level(undefined, [mushroom]);
-//level.noMoreActors('mushroom');
-
-class BadActor {}
-let plan;
-      plan = [
-        'o   o',
-        '  z  ',
-        'o   o'
-      ];
-    
-let time, speed, position;
-time = 5;
-    speed = new Vector(1, 0);
-    //position = new Vector(5, 5);
-    
-const level = {
-  obstacleAt() {
-    return undefined;
-  }
-};
-//const ball = new Fireball(position, speed);
-//const nextPosition = new Vector(10, 5);
-//ball.act(time, level);
-//expect(ball.speed).to.eql(speed);
-//expect(ball.pos).to.eql(nextPosition);
-position = new Vector(5, 5);
-const ball = new FireRain(position);
-ball.pos = new Vector(100, 100);
-ball.handleObstacle();
-let res = ball.pos;
-
-//expect(ball.pos).to.eql(position);
-//expect(ball.speed).to.eql(new Vector(0, 3));
