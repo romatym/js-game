@@ -30,10 +30,6 @@ class Actor {
         this.pos = pos;
         this.size = size;
         this.speed = speed;
-        // неиспользуемый код лучше вообще убрать
-//    if (arguments[3] !== undefined) {
-//       //this.type = arguments[3];
-//    }
     }
     
     act() {
@@ -52,13 +48,7 @@ class Actor {
         return this.pos.y + this.size.y;
     }
     get type() {
-        // неиспользуемый код
-        //if (arguments[3] === undefined) {
         return 'actor';
-//    }
-//    else {
-//       return arguments[3];
-//    }
     }
 
     isIntersect(otherActor) {
@@ -153,19 +143,11 @@ class Level {
     }
 
     isFinished() {
-        // здесь можно написать просто return <выражение в if>
-        if (this.status !== null && this.finishDelay < 0) {
-            return true;
-        }
-        return false;
+        return this.status !== null && this.finishDelay < 0;
     }
     actorAt(actorCheck) {
         if (!(actorCheck instanceof Actor)) {
             throw new Error('Неправильный тип объекта Actor');
-        }
-        // лишняя проверка
-        if (actorCheck === undefined) {
-            throw new Error('Не задан тип объекта Actor');
         }
         // лучше добавить значение по-умолчанию в консрукторе и убрать проверки
         if (this.actors === undefined) {
@@ -188,21 +170,23 @@ class Level {
         }
 
         if (vectorPos.x < 0) {
-            //|| vectorPos.x > this.grid[0].length) {
             return 'wall';
         // если if заканчивается на return, то else можно не писать
-        } else if (vectorPos.y > this.grid.length) {
+        }
+        if (vectorPos.y > this.grid.length) {
             return 'wall';
-        } else if (vectorPos.y < 0) {
+        }
+        if (vectorPos.y < 0) {
             return 'wall';
         }
         let newPositionVector = vectorPos.plus(vectorSize);
-        if (newPositionVector.y < 0) {
-            return 'lava';
-        // эта проверка уже есть выше
-        } else if (newPositionVector.y > this.grid.length) {
-            return 'lava';
-        }
+        // if (newPositionVector.y < 0) {
+        //     return 'lava';
+        // // эта проверка уже есть выше
+        // }
+        // if (newPositionVector.y > this.grid.length) {
+        //     return 'lava';
+        // }
         // нужно переписать, алгоритм:
         // найти клетки которые занимает объект,
         // перебрать их и вернуть препятствие, если оно нашлось
@@ -229,7 +213,6 @@ class Level {
             return 'wall';
         } else if (this.grid[newPositionVector.y][newPositionVector.x] !== undefined) {
             return this.grid[newPositionVector.y][newPositionVector.x];
-            //return undefined;
         }
     }
     removeActor(deleteActor) {
@@ -281,18 +264,19 @@ class LevelParser {
     }
     actorFromSymbol(strActor) {
         // проверка ничего не делает
+        //Метод actorFromSymbol - Вернет undefined, если не передать символ - автотест ругается
         if (strActor === undefined) {
             return undefined;
         }
         return this.vocabulary[strActor];
     }
     obstacleFromSymbol(strObstacle) {
-        // не опускайте фигурные скобки
-        if (strObstacle === 'x')
+        if (strObstacle === 'x') {
             return 'wall';
-        // else можно не писать
-        else if (strObstacle === '!')
+        }
+        if (strObstacle === '!') {
             return 'lava';
+        }
     }
     createGrid(strArray) {
         // здесь лучше использовать метод map 2 раза
@@ -312,34 +296,16 @@ class LevelParser {
         if (this.vocabulary === undefined) {
             return [];
         }
-        // лишняя проверка
-        if (strArray.length === 0) {
-            return [];
-        }
 
         // если значение присваивается переменной 1 раз,
         // то лучше использовать const
-        let actors = [];
-        //for (let row of strArray) {
+        const actors = [];
         for(let z=0; z < strArray.length; z++) {
-            // const
-            let row = strArray[z];
-            //for (let cell of row) {
+            const row = strArray[z];
             for(let i=0; i < row.length; i++) {
-                // const
-                let cell = row[i];
-                // const
-                let prototypeConstructor = this.actorFromSymbol(cell);
-                // тут достаточно проверить, что prototypeConstructor
-                // это функция
-                // ну и никогда не пишите пустой if с else,
-                // в таких случаях нужно обратить условие в if
-                if (prototypeConstructor === undefined 
-                        || !(typeof prototypeConstructor === "function")
-                        || !(new prototypeConstructor instanceof Actor)
-                        ) {
-
-                } else {
+                //const cell = row[i];
+                const prototypeConstructor = this.actorFromSymbol(row[i]);
+                if (typeof prototypeConstructor === "function" && new prototypeConstructor instanceof Actor) {
                     let newObj = new prototypeConstructor(new Vector(i, z));
                     actors.push(newObj);
                 }
@@ -359,9 +325,7 @@ class Fireball extends Actor {
         super(pos, new Vector(1, 1), speed);
     }
     getNextPosition(time = 1) {
-        // лишнее создание двух векторов
-        let speedTime = new Vector(this.speed.x, this.speed.y).times(time);
-        return new Vector(this.pos.x, this.pos.y).plus(speedTime);
+        return new Vector(this.pos.x, this.pos.y).plus(new Vector(this.speed.x, this.speed.y).times(time));
     }
     handleObstacle() {
         this.speed = this.speed.times(-1);
@@ -389,21 +353,15 @@ class HorizontalFireball extends Fireball {
 class VerticalFireball extends Fireball {
     constructor(pos) {
         super(pos, new Vector(0, 2));
-        // size задаётся в родительском классе
-        this.size = new Vector(1, 1);
     }
 }
 
 class FireRain extends Fireball {
     constructor(pos) {
         super(pos, new Vector(0, 3));
-        // size задаётся в родительском классе
-        this.size = new Vector(1, 1);
         this.basePosition = this.pos;
     }
     handleObstacle() {
-        // в чём смысле этой строчки?
-        this.speed = this.speed.times(1);
         this.pos = this.basePosition;
     }    
 }
@@ -411,7 +369,7 @@ class FireRain extends Fireball {
 class Coin extends Actor {
     constructor(pos) {
         // не опускайте аргументы конструктора Vector
-        super(pos, new Vector(0.6, 0.6), new Vector());
+        super(pos, new Vector(0.6, 0.6), new Vector(0, 0));
         // pos должно задавться через вызов родительского конструктора
         this.pos = this.pos.plus(new Vector(0.2, 0.1));
         this.springSpeed = 8;
@@ -426,7 +384,6 @@ class Coin extends Actor {
         return new Vector(0, Math.sin(this.spring) * this.springDist);
     }
     getNextPosition(time = 1) {
-        //return this.pos.plus(getSpringVector);
         this.updateSpring(time);
         return this.basePosition.plus(this.getSpringVector());
     }
@@ -441,7 +398,7 @@ class Coin extends Actor {
 class Player extends Actor {
     constructor(pos = new Vector(0, 0)) {
         // не опускайте аргументы конструктора Vector
-        super(pos.plus(new Vector(0, -0.5)), new Vector(0.8, 1.5), new Vector(), 'player');
+        super(pos.plus(new Vector(0, -0.5)), new Vector(0.8, 1.5), new Vector(0, 0), 'player');
     }
     get type() {
         return 'player';
@@ -450,24 +407,32 @@ class Player extends Actor {
 
 console.log("Проверка связи");
 
-// возьмите уровни из levels.json
-const schema = [
-  '         ',
-  '         ',
-  '    =    ',
-  '       o ',
-  '     !xxx',
-  ' @       ',
-  'xxx!     ',
-  '         '
+const schemas = [
+    [
+        '         ',
+        '         ',
+        '    =    ',
+        '       o ',
+        '     !xxx',
+        ' @       ',
+        'xxx!     ',
+        '         '
+    ],
+    [
+        '      v  ',
+        '    v    ',
+        '  v      ',
+        '        o',
+        '        x',
+        '@   x    ',
+        'x        ',
+        '         '
+    ]
 ];
-// неполный словарь
 const actorDict = {
-  '@': Player,
-  '=': HorizontalFireball
+    '@': Player,
+    'v': FireRain
 }
 const parser = new LevelParser(actorDict);
-const level = parser.parse(schema);
-// для запуска игру нужно использовать функцию runGame
-runLevel(level, DOMDisplay)
-  .then(status => console.log(`Игрок ${status}`));
+runGame(schemas, parser, DOMDisplay)
+    .then(() => console.log('Вы выиграли приз!'));
