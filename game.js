@@ -74,6 +74,17 @@ class Actor {
         b.x1 = otherActor1.x;
         b.y1 = otherActor1.y;
 
+        // лишняя функция
+        //эта функция используется в isIntersect
+        function IntersectionDiagonal(ax1, ay1, ax2, ay2, bx1, by1, bx2, by2) {
+            let v1, v2, v3, v4;
+            v1 = (bx2 - bx1) * (ay1 - by1) - (by2 - by1) * (ax1 - bx1);
+            v2 = (bx2 - bx1) * (ay2 - by1) - (by2 - by1) * (ax2 - bx1);
+            v3 = (ax2 - ax1) * (by1 - ay1) - (ay2 - ay1) * (bx1 - ax1);
+            v4 = (ax2 - ax1) * (by2 - ay1) - (ay2 - ay1) * (bx2 - ax1);
+            return (v1 * v2 < 0) && (v3 * v4 < 0);
+        }
+
         //проверим по пересечению диагоналей прямоугольников
         let res1 = IntersectionDiagonal(a.x, a.y, a.x1, a.y1, b.x, b.y, b.x1, b.y1);
         let res2 = IntersectionDiagonal(a.x, a.y1, a.x1, a.y, b.x, b.y, b.x1, b.y1);
@@ -93,18 +104,6 @@ class Actor {
         )
     }
 }
-
-// лишняя функция
-//эта функция используется в isIntersect
-function IntersectionDiagonal(ax1, ay1, ax2, ay2, bx1, by1, bx2, by2) {
-    let v1, v2, v3, v4;
-    v1 = (bx2 - bx1) * (ay1 - by1) - (by2 - by1) * (ax1 - bx1);
-    v2 = (bx2 - bx1) * (ay2 - by1) - (by2 - by1) * (ax2 - bx1);
-    v3 = (ax2 - ax1) * (by1 - ay1) - (ay2 - ay1) * (bx1 - ax1);
-    v4 = (ax2 - ax1) * (by2 - ay1) - (ay2 - ay1) * (bx2 - ax1);
-    return (v1 * v2 < 0) && (v3 * v4 < 0);
-}
-
 class Level {
     constructor(grid, actors) {
         this.grid = grid;
