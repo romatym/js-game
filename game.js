@@ -31,7 +31,6 @@ class Actor {
         this.size = size;
         this.speed = speed;
     }
-    
     act() {
 
     }
@@ -42,7 +41,7 @@ class Actor {
         return this.pos.x + this.size.x;
     }
     get top() {
-        return this.pos.y;// + this.size.y;
+        return this.pos.y;
     }
     get bottom() {
         return this.pos.y + this.size.y;
@@ -54,10 +53,6 @@ class Actor {
     isIntersect(otherActor) {
         if (!(otherActor instanceof Actor)) {
             throw new Error('Неправильный тип объекта otherActor');
-        }
-        // эта проверка лишняя
-        if (otherActor === undefined) {
-            throw new Error('Не задан тип объекта otherActor');
         }
         if (otherActor === this) {
             return false;
@@ -89,20 +84,18 @@ class Actor {
         }
 
         // а теперь проверим на один прямоугольник внутри другого
-        if (
-                (this.left < otherActor.right && otherActor.right < this.right
-                        || this.left < otherActor.left && otherActor.left < this.right)
-                &&
-                (this.top < otherActor.top && otherActor.top < this.bottom
-                        || this.top < otherActor.bottom && otherActor.bottom < this.bottom)
-                ) {
-            return true;
-        } else
-            return false;
+        return (
+            (this.left < otherActor.right && otherActor.right < this.right
+                || this.left < otherActor.left && otherActor.left < this.right)
+            &&
+            (this.top < otherActor.top && otherActor.top < this.bottom
+                || this.top < otherActor.bottom && otherActor.bottom < this.bottom)
+        )
     }
 }
 
 // лишняя функция
+//эта функция используется в isIntersect
 function IntersectionDiagonal(ax1, ay1, ax2, ay2, bx1, by1, bx2, by2) {
     let v1, v2, v3, v4;
     v1 = (bx2 - bx1) * (ay1 - by1) - (by2 - by1) * (ax1 - bx1);
@@ -171,7 +164,6 @@ class Level {
 
         if (vectorPos.x < 0) {
             return 'wall';
-        // если if заканчивается на return, то else можно не писать
         }
         if (vectorPos.y > this.grid.length) {
             return 'wall';
@@ -180,13 +172,6 @@ class Level {
             return 'wall';
         }
         let newPositionVector = vectorPos.plus(vectorSize);
-        // if (newPositionVector.y < 0) {
-        //     return 'lava';
-        // // эта проверка уже есть выше
-        // }
-        // if (newPositionVector.y > this.grid.length) {
-        //     return 'lava';
-        // }
         // нужно переписать, алгоритм:
         // найти клетки которые занимает объект,
         // перебрать их и вернуть препятствие, если оно нашлось
@@ -219,7 +204,7 @@ class Level {
         // для поиска индекса элемента в массиве есть специальный метод
         this.actors.forEach(function (item, i, arr) {
             if (item === deleteActor) {
-                arr.splice(i, 1);//delete arr[i];
+                arr.splice(i, 1);
                 return;
             }
         });
@@ -297,13 +282,10 @@ class LevelParser {
             return [];
         }
 
-        // если значение присваивается переменной 1 раз,
-        // то лучше использовать const
         const actors = [];
         for(let z=0; z < strArray.length; z++) {
             const row = strArray[z];
             for(let i=0; i < row.length; i++) {
-                //const cell = row[i];
                 const prototypeConstructor = this.actorFromSymbol(row[i]);
                 if (typeof prototypeConstructor === "function" && new prototypeConstructor instanceof Actor) {
                     let newObj = new prototypeConstructor(new Vector(i, z));
@@ -368,7 +350,6 @@ class FireRain extends Fireball {
 
 class Coin extends Actor {
     constructor(pos) {
-        // не опускайте аргументы конструктора Vector
         super(pos, new Vector(0.6, 0.6), new Vector(0, 0));
         // pos должно задавться через вызов родительского конструктора
         this.pos = this.pos.plus(new Vector(0.2, 0.1));
@@ -397,7 +378,6 @@ class Coin extends Actor {
 
 class Player extends Actor {
     constructor(pos = new Vector(0, 0)) {
-        // не опускайте аргументы конструктора Vector
         super(pos.plus(new Vector(0, -0.5)), new Vector(0.8, 1.5), new Vector(0, 0), 'player');
     }
     get type() {
