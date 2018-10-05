@@ -69,8 +69,8 @@ class Actor {
         // обе проверки в сумме дают правильный результат
         // /////////////////////////
         //переведем в координаты
-        let this1 = this.pos.plus(this.size);
-        let otherActor1 = otherActor.pos.plus(otherActor.size);
+        const this1 = this.pos.plus(this.size);
+        const otherActor1 = otherActor.pos.plus(otherActor.size);
 
         let a = this.pos;
         a.x1 = this1.x;
@@ -138,46 +138,34 @@ class Level {
         if (vectorPos.x < 0) {
             return 'wall';
         }
-        if (vectorPos.y > this.grid.length) {
-            return 'wall';
-        }
         if (vectorPos.y < 0) {
             return 'wall';
         }
         if (vectorPos.x + vectorSize.x > this.grid[0].length) {
             return 'wall';
         }
-        
-        let positionPlusSize = vectorPos.plus(vectorSize);
-        
+        if (vectorPos.y > this.grid.length) {
+            return 'wall';
+        }
+
+        const positionPlusSize = vectorPos.plus(vectorSize);
+
         const startPosX = Math.min(vectorPos.x, positionPlusSize.x);
         const finishPosX = Math.max(vectorPos.x, positionPlusSize.x);
         const startPosY = Math.min(vectorPos.y, positionPlusSize.y);
         const finishPosY = Math.max(vectorPos.y, positionPlusSize.y);
         
-        for(let x = startPosX; x < finishPosX; x++ ) {
-            for(let y = startPosY; y < finishPosY; y++ ) {
-                
-                let integerX = Math.floor(x);
-                let integerY = Math.floor(y);
+        for(let x = startPosX; x <= finishPosX; x++ ) {
+            for(let y = startPosY; y <= finishPosY; y++ ) {
+
+                const integerX = Math.floor(x);
+                const integerY = Math.floor(y);
                 
                 if (this.grid[integerY] === undefined) {
                     return 'lava';
                 }
-                if (y > this.grid[integerY].length) {
-                    return 'wall';
-                }
-                if (x > this.grid[0].length) {
-                    return 'wall';
-                }
-                if (y > this.grid[integerY].length) {
-                    return 'wall';
-                }
-                if (x > this.grid[0].length) {
-                    return 'wall';
-                }
-                
-                let obstacle = this.grid[integerY + 1][integerX + 1];
+
+                const obstacle = this.grid[integerY][integerX];
                 if(!(obstacle === undefined)) {
                     return obstacle;
                 }
@@ -185,11 +173,14 @@ class Level {
         }
     }
     removeActor(deleteActor) {
-        this.actors.splice(this.actors.indexOf(deleteActor), 1);
+        const deleteIndex = this.actors.indexOf(deleteActor);
+        if(deleteIndex > -1) {
+            this.actors.splice(deleteIndex, 1);
+        }
     }
 
     noMoreActors(actorType) {
-        return (this.actors.find(actor => actor.type === actorType) === undefined);
+        return !(this.actors.some(actor => actor.type === actorType));
     }
 
     playerTouched(objectType, objectActor) {
@@ -225,7 +216,7 @@ class LevelParser {
         }
     }
     createGrid(strArray) {
-        let grid = [];
+        const grid = [];
         strArray.map(row => {
             grid.push(row.split('').map(
                     (cell) => {return this.obstacleFromSymbol(cell);
@@ -240,7 +231,7 @@ class LevelParser {
             for(let i=0; i < row.length; i++) {
                 const prototypeConstructor = this.actorFromSymbol(row[i]);
                 if (typeof prototypeConstructor === "function" && new prototypeConstructor instanceof Actor) {
-                    let newObj = new prototypeConstructor(new Vector(i, z));
+                    const newObj = new prototypeConstructor(new Vector(i, z));
                     actors.push(newObj);
                 }
             }
@@ -248,9 +239,7 @@ class LevelParser {
         return actors;
     }
     parse(strArray) {
-        let grid = this.createGrid(strArray);
-        let actors = this.createActors(strArray);
-        return new Level(grid, actors);
+        return new Level(this.createGrid(strArray), this.createActors(strArray));
     }
 }
 
@@ -265,7 +254,7 @@ class Fireball extends Actor {
         this.speed = this.speed.times(-1);
     }
     act(time, gameField) {
-        let nextPosition = this.getNextPosition(time);
+        const nextPosition = this.getNextPosition(time);
 
         if (gameField.obstacleAt(nextPosition, this.size) === undefined) {
             this.pos = nextPosition;
@@ -301,10 +290,8 @@ class FireRain extends Fireball {
 }
 
 class Coin extends Actor {
-    constructor(pos) {
-        super(pos, new Vector(0.6, 0.6), new Vector(0, 0));
-        // pos должно задаваться через вызов родительского конструктора
-        this.pos = this.pos.plus(new Vector(0.2, 0.1));
+    constructor(pos = new Vector(0, 0)) {
+        super(pos.plus(new Vector(0.2, 0.1)), new Vector(0.6, 0.6), new Vector(0, 0));
         this.springSpeed = 8;
         this.springDist = 0.07;
         this.spring = Math.random() * 2 * (Math.PI);
