@@ -62,6 +62,12 @@ class Actor {
         // алгоритм следующий:
         // если объект выше, ниже, левее или правее,
         // то он не пересекается с данным
+        // //////////////////////////
+        // я так и сделал ниже в блоке "проверим на один прямоугольник внутри другого", но от обратного условия
+        // этого оказалось недостаточно - есть примеры, когда один прямоугольник наложен на другой, и в таком случае код не проходит проверку
+        // поэтому я добавил проверку на пересечение диагоналей прямоугольников
+        // обе проверки в сумме дают правильный результат
+        // /////////////////////////
         //переведем в координаты
         let this1 = this.pos.plus(this.size);
         let otherActor1 = otherActor.pos.plus(otherActor.size);
@@ -74,8 +80,6 @@ class Actor {
         b.x1 = otherActor1.x;
         b.y1 = otherActor1.y;
 
-        // лишняя функция
-        //эта функция используется в isIntersect
         function IntersectionDiagonal(ax1, ay1, ax2, ay2, bx1, by1, bx2, by2) {
             let v1, v2, v3, v4;
             v1 = (bx2 - bx1) * (ay1 - by1) - (by2 - by1) * (ax1 - bx1);
@@ -86,8 +90,8 @@ class Actor {
         }
 
         //проверим по пересечению диагоналей прямоугольников
-        let res1 = IntersectionDiagonal(a.x, a.y, a.x1, a.y1, b.x, b.y, b.x1, b.y1);
-        let res2 = IntersectionDiagonal(a.x, a.y1, a.x1, a.y, b.x, b.y, b.x1, b.y1);
+        const res1 = IntersectionDiagonal(a.x, a.y, a.x1, a.y1, b.x, b.y, b.x1, b.y1);
+        const res2 = IntersectionDiagonal(a.x, a.y1, a.x1, a.y, b.x, b.y, b.x1, b.y1);
 
         if (res1 || res2) {
             //есть пересечение по диагоналям
@@ -101,23 +105,20 @@ class Actor {
             &&
             (this.top < otherActor.top && otherActor.top < this.bottom
                 || this.top < otherActor.bottom && otherActor.bottom < this.bottom)
-        )
+        );
     }
 }
+//function setDefaults(obj) {
+//        obj.height = 0;
+//        obj.width = 0;
+//    }
 class Level {
     constructor(grid, actors) {
         this.grid = grid;
         this.actors = actors;
         // лучше добавить значение по-умолчанию
         if (actors !== undefined) {
-            // для поиска объектов в массиве есть специальный метод
-            let player = undefined;
-            this.actors.forEach(function (item, i, arr) {
-                if (item.type === 'player') {
-                    player = item;
-                }
-            });
-            this.player = player;
+            this.player = this.actors.find(actor => actor.type === 'player');
         }
       // лучше добавить значение по-умолчанию
         if (grid === undefined) {
@@ -125,15 +126,12 @@ class Level {
             this.width = 0;
         } else {
             this.height = grid.length;
-            // тут лучше использовать стрелочную функцию (будет короче)
-            this.width = grid.reduce(function (max, current) {
-                return Math.max(max, current.length);
-            }, 0);
+            this.width = grid.reduce( (max, current) => Math.max(max, current.length), 0);
         }
         this.status = null;
         this.finishDelay = 1;
     }
-
+    
     isFinished() {
         return this.status !== null && this.finishDelay < 0;
     }
@@ -141,17 +139,11 @@ class Level {
         if (!(actorCheck instanceof Actor)) {
             throw new Error('Неправильный тип объекта Actor');
         }
-        // лучше добавить значение по-умолчанию в консрукторе и убрать проверки
+        // лучше добавить значение по-умолчанию в конструкторе и убрать проверки
         if (this.actors === undefined) {
             return undefined;
         }
-
-        // для поиска элемента в массиве есть специальный метод
-        for (let item of this.actors) {
-            if (actorCheck.isIntersect(item)) {
-                return item;
-            }
-        }
+        return this.actors.find(actor => actorCheck.isIntersect(actor));
     }
     obstacleAt(vectorPos, vectorSize) {
         if (!(vectorPos instanceof Vector)) {
@@ -200,13 +192,7 @@ class Level {
         }
     }
     removeActor(deleteActor) {
-        // для поиска индекса элемента в массиве есть специальный метод
-        this.actors.forEach(function (item, i, arr) {
-            if (item === deleteActor) {
-                arr.splice(i, 1);
-                return;
-            }
-        });
+        this.actors.splice(this.actors.indexOf(deleteActor), 1);
     }
 
     noMoreActors(actorType) {
@@ -214,15 +200,7 @@ class Level {
         if (this.actors === undefined) {
             return true;
         }
-        let result = true;
-        // тут тоже можно использовать метод массива
-        this.actors.forEach(function (item, i, arr) {
-            if (item.type === actorType) {
-                result = false;
-                return;
-            }
-        });
-        return result;
+        return (this.actors.find(actor => actor.type === actorType) === undefined);
     }
 
     playerTouched(objectType, objectActor) {
@@ -248,7 +226,7 @@ class LevelParser {
     }
     actorFromSymbol(strActor) {
         // проверка ничего не делает
-        //Метод actorFromSymbol - Вернет undefined, если не передать символ - автотест ругается
+        //Если убрать, то не проходит автотест: Метод actorFromSymbol - Вернет undefined, если не передать символ
         if (strActor === undefined) {
             return undefined;
         }
@@ -263,15 +241,12 @@ class LevelParser {
         }
     }
     createGrid(strArray) {
-        // здесь лучше использовать метод map 2 раза
         let grid = [];
-        for (let row of strArray) {
-            let newRow = [];
-            for (let cell of row) {
-                newRow.push(this.obstacleFromSymbol(cell));
-            }
-            grid.push(newRow);
-        }
+        strArray.map(row => {
+            grid.push(row.split('').map(
+                    (cell) => {return this.obstacleFromSymbol(cell);
+            }, this));
+        }, this);
         return grid;
     }
     createActors(strArray) {
@@ -350,7 +325,7 @@ class FireRain extends Fireball {
 class Coin extends Actor {
     constructor(pos) {
         super(pos, new Vector(0.6, 0.6), new Vector(0, 0));
-        // pos должно задавться через вызов родительского конструктора
+        // pos должно задаваться через вызов родительского конструктора
         this.pos = this.pos.plus(new Vector(0.2, 0.1));
         this.springSpeed = 8;
         this.springDist = 0.07;
@@ -388,10 +363,10 @@ console.log("Проверка связи");
 
 const schemas = [
     [
-        '         ',
-        '         ',
-        '    =    ',
-        '       o ',
+        'x        ',
+        'x        ',
+        'x   =    ',
+        'x      o ',
         '     !xxx',
         ' @       ',
         'xxx!     ',
@@ -411,7 +386,7 @@ const schemas = [
 const actorDict = {
     '@': Player,
     'v': FireRain
-}
+};
 const parser = new LevelParser(actorDict);
 runGame(schemas, parser, DOMDisplay)
     .then(() => console.log('Вы выиграли приз!'));
