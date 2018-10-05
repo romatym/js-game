@@ -108,26 +108,13 @@ class Actor {
         );
     }
 }
-//function setDefaults(obj) {
-//        obj.height = 0;
-//        obj.width = 0;
-//    }
 class Level {
-    constructor(grid, actors) {
+    constructor(grid = [], actors = []) {
         this.grid = grid;
         this.actors = actors;
-        // лучше добавить значение по-умолчанию
-        if (actors !== undefined) {
-            this.player = this.actors.find(actor => actor.type === 'player');
-        }
-      // лучше добавить значение по-умолчанию
-        if (grid === undefined) {
-            this.height = 0;
-            this.width = 0;
-        } else {
-            this.height = grid.length;
-            this.width = grid.reduce( (max, current) => Math.max(max, current.length), 0);
-        }
+        this.player = this.actors.find(actor => actor.type === 'player');
+        this.height = grid.length;
+        this.width = grid.reduce( (max, current) => Math.max(max, current.length), 0);
         this.status = null;
         this.finishDelay = 1;
     }
@@ -139,20 +126,15 @@ class Level {
         if (!(actorCheck instanceof Actor)) {
             throw new Error('Неправильный тип объекта Actor');
         }
-        // лучше добавить значение по-умолчанию в конструкторе и убрать проверки
-        if (this.actors === undefined) {
-            return undefined;
-        }
         return this.actors.find(actor => actorCheck.isIntersect(actor));
     }
     obstacleAt(vectorPos, vectorSize) {
         if (!(vectorPos instanceof Vector)) {
-            throw new Error('Неправильный тип объекта vectorAt');
+            throw new Error('Неправильный тип объекта vectorPos');
         }
         if (!(vectorSize instanceof Vector)) {
             throw new Error('Неправильный тип объекта vectorSize');
         }
-
         if (vectorPos.x < 0) {
             return 'wall';
         }
@@ -162,33 +144,44 @@ class Level {
         if (vectorPos.y < 0) {
             return 'wall';
         }
-        let newPositionVector = vectorPos.plus(vectorSize);
-        // нужно переписать, алгоритм:
-        // найти клетки которые занимает объект,
-        // перебрать их и вернуть препятствие, если оно нашлось
-        if (!Number.isInteger(newPositionVector.y) && !Number.isInteger(newPositionVector.x)) {
-            //дробное число
-            if(this.grid[Math.ceil(newPositionVector.y-1)][Math.ceil(newPositionVector.x-1)] === 'wall'
-                || this.grid[Math.floor(newPositionVector.y-1)][Math.floor(newPositionVector.x-1)] === 'wall') {
+        if (vectorPos.x + vectorSize.x > this.grid[0].length) {
+            return 'wall';
+        }
+        
+        let positionPlusSize = vectorPos.plus(vectorSize);
+        
+        const startPosX = Math.min(vectorPos.x, positionPlusSize.x);
+        const finishPosX = Math.max(vectorPos.x, positionPlusSize.x);
+        const startPosY = Math.min(vectorPos.y, positionPlusSize.y);
+        const finishPosY = Math.max(vectorPos.y, positionPlusSize.y);
+        
+        for(let x = startPosX; x < finishPosX; x++ ) {
+            for(let y = startPosY; y < finishPosY; y++ ) {
+                
+                let integerX = Math.floor(x);
+                let integerY = Math.floor(y);
+                
+                if (this.grid[integerY] === undefined) {
+                    return 'lava';
+                }
+                if (y > this.grid[integerY].length) {
+                    return 'wall';
+                }
+                if (x > this.grid[0].length) {
+                    return 'wall';
+                }
+                if (y > this.grid[integerY].length) {
+                    return 'wall';
+                }
+                if (x > this.grid[0].length) {
                     return 'wall';
                 }
                 
-        } else if (this.grid[newPositionVector.y] === undefined) {
-            return 'lava';
-        } else if (newPositionVector.y > this.grid[newPositionVector.y].length) {
-            return 'wall';
-        } else if (newPositionVector.x > this.grid[0].length) {
-            return 'wall';
-        } else if (this.grid[newPositionVector.y][newPositionVector.x] !== undefined) {
-            return this.grid[newPositionVector.y][newPositionVector.x];
-        } else if (this.grid[newPositionVector.y] === undefined) {
-            return 'lava';
-        } else if (newPositionVector.y > this.grid[newPositionVector.y].length) {
-            return 'wall';
-        } else if (newPositionVector.x > this.grid[0].length) {
-            return 'wall';
-        } else if (this.grid[newPositionVector.y][newPositionVector.x] !== undefined) {
-            return this.grid[newPositionVector.y][newPositionVector.x];
+                let obstacle = this.grid[integerY + 1][integerX + 1];
+                if(!(obstacle === undefined)) {
+                    return obstacle;
+                }
+            }
         }
     }
     removeActor(deleteActor) {
@@ -196,10 +189,6 @@ class Level {
     }
 
     noMoreActors(actorType) {
-        // см. выше
-        if (this.actors === undefined) {
-            return true;
-        }
         return (this.actors.find(actor => actor.type === actorType) === undefined);
     }
 
@@ -221,15 +210,10 @@ class Level {
 }
 
 class LevelParser {
-    constructor(symbolsVocabulary) {
+    constructor(symbolsVocabulary = {}) {
         this.vocabulary = symbolsVocabulary;
     }
     actorFromSymbol(strActor) {
-        // проверка ничего не делает
-        //Если убрать, то не проходит автотест: Метод actorFromSymbol - Вернет undefined, если не передать символ
-        if (strActor === undefined) {
-            return undefined;
-        }
         return this.vocabulary[strActor];
     }
     obstacleFromSymbol(strObstacle) {
@@ -250,12 +234,6 @@ class LevelParser {
         return grid;
     }
     createActors(strArray) {
-        // лучше добавить значение по-умолчанию
-        // в конструкторе и убрать проверку
-        if (this.vocabulary === undefined) {
-            return [];
-        }
-
         const actors = [];
         for(let z=0; z < strArray.length; z++) {
             const row = strArray[z];
@@ -363,10 +341,10 @@ console.log("Проверка связи");
 
 const schemas = [
     [
-        'x        ',
-        'x        ',
-        'x   =    ',
-        'x      o ',
+        '         ',
+        '         ',
+        '    =    ',
+        '       o ',
         '     !xxx',
         ' @       ',
         'xxx!     ',
