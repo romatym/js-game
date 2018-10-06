@@ -58,54 +58,24 @@ class Actor {
             return false;
         }
 
-        // всё что ниже нужно переписать,
-        // алгоритм следующий:
-        // если объект выше, ниже, левее или правее,
-        // то он не пересекается с данным
-        // //////////////////////////
-        // я так и сделал ниже в блоке "проверим на один прямоугольник внутри другого", но от обратного условия
-        // этого оказалось недостаточно - есть примеры, когда один прямоугольник наложен на другой, и в таком случае код не проходит проверку
-        // поэтому я добавил проверку на пересечение диагоналей прямоугольников
-        // обе проверки в сумме дают правильный результат
-        // /////////////////////////
-        //переведем в координаты
-        const this1 = this.pos.plus(this.size);
-        const otherActor1 = otherActor.pos.plus(otherActor.size);
-
-        let a = this.pos;
-        a.x1 = this1.x;
-        a.y1 = this1.y;
-
-        let b = otherActor.pos;
-        b.x1 = otherActor1.x;
-        b.y1 = otherActor1.y;
-
-        function IntersectionDiagonal(ax1, ay1, ax2, ay2, bx1, by1, bx2, by2) {
-            let v1, v2, v3, v4;
-            v1 = (bx2 - bx1) * (ay1 - by1) - (by2 - by1) * (ax1 - bx1);
-            v2 = (bx2 - bx1) * (ay2 - by1) - (by2 - by1) * (ax2 - bx1);
-            v3 = (ax2 - ax1) * (by1 - ay1) - (ay2 - ay1) * (bx1 - ax1);
-            v4 = (ax2 - ax1) * (by2 - ay1) - (ay2 - ay1) * (bx2 - ax1);
-            return (v1 * v2 < 0) && (v3 * v4 < 0);
+        //otherActor слева
+        if(this.left >= otherActor.right && this.left >= otherActor.left) {
+            return false;
+        }
+        //otherActor сверху
+        if(this.top >= otherActor.top && this.top >= otherActor.bottom) {
+            return false;
+        }
+        //otherActor справа
+        if(this.right <= otherActor.left && this.right <= otherActor.right) {
+            return false;
+        }
+        //otherActor снизу
+        if(this.bottom <= otherActor.top && this.bottom <= otherActor.bottom) {
+            return false;
         }
 
-        //проверим по пересечению диагоналей прямоугольников
-        const res1 = IntersectionDiagonal(a.x, a.y, a.x1, a.y1, b.x, b.y, b.x1, b.y1);
-        const res2 = IntersectionDiagonal(a.x, a.y1, a.x1, a.y, b.x, b.y, b.x1, b.y1);
-
-        if (res1 || res2) {
-            //есть пересечение по диагоналям
-            return true;
-        }
-
-        // а теперь проверим на один прямоугольник внутри другого
-        return (
-            (this.left < otherActor.right && otherActor.right < this.right
-                || this.left < otherActor.left && otherActor.left < this.right)
-            &&
-            (this.top < otherActor.top && otherActor.top < this.bottom
-                || this.top < otherActor.bottom && otherActor.bottom < this.bottom)
-        );
+        return true;
     }
 }
 class Level {
@@ -324,7 +294,7 @@ class Player extends Actor {
     }
 }
 
-console.log("Проверка связи");
+//**************************** уровень *********************************
 
 const schemas = [
     [
