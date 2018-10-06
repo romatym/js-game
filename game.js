@@ -111,7 +111,6 @@ class Level {
         if (!(vectorSize instanceof Vector)) {
             throw new Error('Неправильный тип объекта vectorSize');
         }
-
         if (vectorPos.x < 0) {
             return 'wall';
         }
@@ -203,8 +202,7 @@ class LevelParser {
             for(let i=0; i < row.length; i++) {
                 const prototypeConstructor = this.actorFromSymbol(row[i]);
                 if (typeof prototypeConstructor === "function" && new prototypeConstructor instanceof Actor) {
-                    const newObj = new prototypeConstructor(new Vector(i, z));
-                    actors.push(newObj);
+                    actors.push(new prototypeConstructor(new Vector(i, z)));
                 }
             }
         }
@@ -220,7 +218,7 @@ class Fireball extends Actor {
         super(pos, new Vector(1, 1), speed);
     }
     getNextPosition(time = 1) {
-        return new Vector(this.pos.x, this.pos.y).plus(new Vector(this.speed.x, this.speed.y).times(time));
+        return this.pos.plus(this.speed.times(time));
     }
     handleObstacle() {
         this.speed = this.speed.times(-1);
@@ -306,7 +304,7 @@ const schemas = [
         "                       ",
         "                       ",
         "  |xxx                 ",
-        "  o                 o  ",
+        "   o                o  ",
         "  x                 x  ",
         "  x          o o    x  ",
         "  x  @    * xxxxxx  x  ",
