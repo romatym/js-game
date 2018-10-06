@@ -58,20 +58,24 @@ class Actor {
             return false;
         }
 
-        //otherActor слева
-        if(this.left >= otherActor.right && this.left >= otherActor.left) {
-            return false;
-        }
-        //otherActor сверху
-        if(this.top >= otherActor.top && this.top >= otherActor.bottom) {
-            return false;
-        }
         //otherActor справа
-        if(this.right <= otherActor.left && this.right <= otherActor.right) {
+        if(this.left >= otherActor.right //&& this.left >= otherActor.left
+        ) {
             return false;
         }
         //otherActor снизу
-        if(this.bottom <= otherActor.top && this.bottom <= otherActor.bottom) {
+        if(this.top >= otherActor.bottom //&& this.top >= otherActor.bottom
+        ) {
+            return false;
+        }
+        //otherActor слева
+        if(this.right <= otherActor.left //&& this.right <= otherActor.right
+        ) {
+            return false;
+        }
+        //otherActor сверху
+        if(this.bottom <= otherActor.top //&& this.bottom <= otherActor.bottom
+        ) {
             return false;
         }
 
@@ -88,16 +92,18 @@ class Level {
         this.status = null;
         this.finishDelay = 1;
     }
-    
+
     isFinished() {
         return this.status !== null && this.finishDelay < 0;
     }
+
     actorAt(actorCheck) {
         if (!(actorCheck instanceof Actor)) {
             throw new Error('Неправильный тип объекта Actor');
         }
         return this.actors.find(actor => actorCheck.isIntersect(actor));
     }
+
     obstacleAt(vectorPos, vectorSize) {
         if (!(vectorPos instanceof Vector)) {
             throw new Error('Неправильный тип объекта vectorPos');
@@ -105,19 +111,22 @@ class Level {
         if (!(vectorSize instanceof Vector)) {
             throw new Error('Неправильный тип объекта vectorSize');
         }
+
         if (vectorPos.x < 0) {
             return 'wall';
         }
         if (vectorPos.y < 0) {
             return 'wall';
         }
-        if (vectorPos.x + vectorSize.x > this.grid[0].length) {
-            return 'wall';
-        }
         if (vectorPos.y > this.grid.length) {
             return 'wall';
         }
-
+        if (vectorPos.y + vectorSize.y > this.grid.length) {
+            return 'lava';
+        }
+        if (this.grid.length > 0 && (vectorPos.x + vectorSize.x > this.grid[0].length)) {
+            return 'wall';
+        }
         const positionPlusSize = vectorPos.plus(vectorSize);
 
         const startPosX = Math.min(vectorPos.x, positionPlusSize.x);
@@ -125,17 +134,10 @@ class Level {
         const startPosY = Math.min(vectorPos.y, positionPlusSize.y);
         const finishPosY = Math.max(vectorPos.y, positionPlusSize.y);
         
-        for(let x = startPosX; x <= finishPosX; x++ ) {
-            for(let y = startPosY; y <= finishPosY; y++ ) {
+        for(let x = Math.floor(startPosX); x < finishPosX; x++ ) {
+            for(let y = Math.floor(startPosY); y < finishPosY; y++ ) {
 
-                const integerX = Math.floor(x);
-                const integerY = Math.floor(y);
-                
-                if (this.grid[integerY] === undefined) {
-                    return 'lava';
-                }
-
-                const obstacle = this.grid[integerY][integerX];
+                const obstacle = this.grid[y][x];
                 if(!(obstacle === undefined)) {
                     return obstacle;
                 }
@@ -287,7 +289,7 @@ class Coin extends Actor {
 
 class Player extends Actor {
     constructor(pos = new Vector(0, 0)) {
-        super(pos.plus(new Vector(0, -0.5)), new Vector(0.8, 1.5), new Vector(0, 0), 'player');
+        super(pos.plus(new Vector(0, -0.5)), new Vector(0.8, 1.5), new Vector(0, 0));
     }
     get type() {
         return 'player';
@@ -298,30 +300,28 @@ class Player extends Actor {
 
 const schemas = [
     [
-        '         ',
-        '         ',
-        '    =    ',
-        '       o ',
-        '     !xxx',
-        ' @       ',
-        'xxx!     ',
-        '         '
-    ],
-    [
-        '      v  ',
-        '    v    ',
-        '  v      ',
-        '        o',
-        '        x',
-        '@   x    ',
-        'x        ',
-        '         '
+        "     v                 ",
+        "                       ",
+        "                 =  x  ",
+        "                       ",
+        "                       ",
+        "  |xxx                 ",
+        "  o                 o  ",
+        "  x                 x  ",
+        "  x          o o    x  ",
+        "  x  @    * xxxxxx  x  ",
+        "  xxxxx             x  ",
+        "      x!!!!!!!!!!!!!x  ",
+        "      xxxxxxxxxxxxxxx  ",
+        "                       "
     ]
 ];
 const actorDict = {
     '@': Player,
     'v': FireRain,
-    'o': Coin
+    'o': Coin,
+    '=': HorizontalFireball,
+    '|': VerticalFireball
 };
 const parser = new LevelParser(actorDict);
 runGame(schemas, parser, DOMDisplay)
