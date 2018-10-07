@@ -59,23 +59,19 @@ class Actor {
         }
 
         //otherActor справа
-        if(this.left >= otherActor.right //&& this.left >= otherActor.left
-        ) {
+        if(this.left >= otherActor.right) {
             return false;
         }
         //otherActor снизу
-        if(this.top >= otherActor.bottom //&& this.top >= otherActor.bottom
-        ) {
+        if(this.top >= otherActor.bottom) {
             return false;
         }
         //otherActor слева
-        if(this.right <= otherActor.left //&& this.right <= otherActor.right
-        ) {
+        if(this.right <= otherActor.left) {
             return false;
         }
         //otherActor сверху
-        if(this.bottom <= otherActor.top //&& this.bottom <= otherActor.bottom
-        ) {
+        if(this.bottom <= otherActor.top) {
             return false;
         }
 
@@ -184,7 +180,7 @@ class LevelParser {
         const grid = [];
         strArray.map(row => {
             grid.push(row.split('').map(
-                    (cell) => {return this.obstacleFromSymbol(cell);
+                    cell => {return this.obstacleFromSymbol(cell);
             }, this));
         }, this);
         return grid;
