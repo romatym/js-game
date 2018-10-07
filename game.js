@@ -113,16 +113,15 @@ class Level {
         if (vectorPos.y < 0) {
             return 'wall';
         }
-        if (vectorPos.y > this.grid.length) {
-            return 'wall';
-        }
-        if (vectorPos.y + vectorSize.y > this.grid.length) {
+
+        const positionPlusSize = vectorPos.plus(vectorSize);
+        if (positionPlusSize.y > this.height) {
             return 'lava';
         }
-        if (vectorPos.x + vectorSize.x > this.width) {
+        if (positionPlusSize.x > this.width) {
             return 'wall';
         }
-        const positionPlusSize = vectorPos.plus(vectorSize);
+
         for(let x = Math.floor(vectorPos.x); x < positionPlusSize.x; x++ ) {
             for(let y = Math.floor(vectorPos.y); y < positionPlusSize.y; y++ ) {
 
@@ -285,23 +284,102 @@ class Player extends Actor {
 }
 
 const schemas = [
-    [
-        "     v                 ",
-        "                       ",
-        "                 =  x  ",
-        "                       ",
-        "                       ",
-        "  |xxx                 ",
-        "   o                o  ",
-        "  x                 x  ",
-        "  x          o o    x  ",
-        "  x  @    * xxxxxx  x  ",
-        "  xxxxx             x  ",
-        "      x!!!!!!!!!!!!!x  ",
-        "      xxxxxxxxxxxxxxx  ",
-        "                       "
-    ]
-];
+        [
+            "     v                 ",
+            "                       ",
+            "                       ",
+            "                       ",
+            "                       ",
+            "  |xxx       w         ",
+            "  o                 o  ",
+            "  x               = x  ",
+            "  x          o o    x  ",
+            "  x  @    *  xxxxx  x  ",
+            "  xxxxx             x  ",
+            "      x!!!!!!!!!!!!!x  ",
+            "      xxxxxxxxxxxxxxx  ",
+            "                       "
+        ],
+        [
+            "     v                 ",
+            "                       ",
+            "                       ",
+            "                       ",
+            "                       ",
+            "  |                    ",
+            "  o                 o  ",
+            "  x               = x  ",
+            "  x          o o    x  ",
+            "  x  @       xxxxx  x  ",
+            "  xxxxx             x  ",
+            "      x!!!!!!!!!!!!!x  ",
+            "      xxxxxxxxxxxxxxx  ",
+            "                       "
+        ],
+        [
+            "        |           |  ",
+            "                       ",
+            "                       ",
+            "                       ",
+            "                       ",
+            "                       ",
+            "                       ",
+            "                       ",
+            "                       ",
+            "     |                 ",
+            "                       ",
+            "         =      |      ",
+            " @ |  o            o   ",
+            "xxxxxxxxx!!!!!!!xxxxxxx",
+            "                       "
+        ],
+        [
+            "                       ",
+            "                       ",
+            "                       ",
+            "    o                  ",
+            "    x      | x!!x=     ",
+            "         x             ",
+            "                      x",
+            "                       ",
+            "                       ",
+            "                       ",
+            "               xxx     ",
+            "                       ",
+            "                       ",
+            "       xxx  |          ",
+            "                       ",
+            " @                     ",
+            "xxx                    ",
+            "                       "
+        ], [
+            "   v         v",
+            "              ",
+            "         !o!  ",
+            "              ",
+            "              ",
+            "              ",
+            "              ",
+            "         xxx  ",
+            "          o   ",
+            "        =     ",
+            "  @           ",
+            "  xxxx        ",
+            "  |           ",
+            "      xxx    x",
+            "              ",
+            "          !   ",
+            "              ",
+            "              ",
+            " o       x    ",
+            " x      x     ",
+            "       x      ",
+            "      x       ",
+            "   xx         ",
+            "              "
+        ]
+    ];
+
 const actorDict = {
     '@': Player,
     'v': FireRain,
