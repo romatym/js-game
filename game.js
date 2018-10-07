@@ -123,18 +123,12 @@ class Level {
         if (vectorPos.y + vectorSize.y > this.grid.length) {
             return 'lava';
         }
-        if (this.grid.length > 0 && (vectorPos.x + vectorSize.x > this.grid[0].length)) {
+        if (vectorPos.x + vectorSize.x > this.width) {
             return 'wall';
         }
         const positionPlusSize = vectorPos.plus(vectorSize);
-
-        const startPosX = Math.min(vectorPos.x, positionPlusSize.x);
-        const finishPosX = Math.max(vectorPos.x, positionPlusSize.x);
-        const startPosY = Math.min(vectorPos.y, positionPlusSize.y);
-        const finishPosY = Math.max(vectorPos.y, positionPlusSize.y);
-        
-        for(let x = Math.floor(startPosX); x < finishPosX; x++ ) {
-            for(let y = Math.floor(startPosY); y < finishPosY; y++ ) {
+        for(let x = Math.floor(vectorPos.x); x < positionPlusSize.x; x++ ) {
+            for(let y = Math.floor(vectorPos.y); y < positionPlusSize.y; y++ ) {
 
                 const obstacle = this.grid[y][x];
                 if(!(obstacle === undefined)) {
@@ -293,8 +287,6 @@ class Player extends Actor {
         return 'player';
     }
 }
-
-//**************************** уровень *********************************
 
 const schemas = [
     [
